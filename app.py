@@ -3,6 +3,7 @@ from datetime import timedelta
 from flask import Flask, render_template, jsonify, request, session
 from db import init_db
 from routes.auth_routes import auth_bp
+from routes.health_data_routes import health_data_bp
 
 def create_app(test_config=None):
     """Application factory for Flask app."""
@@ -28,6 +29,7 @@ def create_app(test_config=None):
 
     # Register Blueprints
     app.register_blueprint(auth_bp)
+    app.register_blueprint(health_data_bp)
 
     # Landing / Home Route
     @app.route("/")
@@ -41,6 +43,7 @@ def create_app(test_config=None):
             "status": "healthy",
             "service": "AI Diabetes Risk Prediction System",
             "member1_auth_profile": "active",
+            "member2_health_data": "active",
             "authenticated": "user_id" in session
         }), 200
 

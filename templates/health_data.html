@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+
+{% block title %}Clinical Health Data Input — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="profile-header-banner" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 800;">Clinical Health Data Input</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Enter verified physiological biomarkers and metabolic measurements for clinical risk analysis.
+            </p>
+        </div>
+        <div class="hero-badge" style="margin-bottom: 0;">
+            <span>🔬 Member 2: Health Data Input Module</span>
+        </div>
+    </div>
+</div>
+
+<div class="profile-grid" style="grid-template-columns: 1fr 340px;">
+    <!-- Main Column: Health Data Collection Form -->
+    <div class="profile-card" id="health-data-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+            <h2 style="font-size: 1.35rem; font-weight: 700;">Patient Biomarker Entry Form</h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">* Denotes required clinical indicator</span>
+        </div>
+
+        <form method="POST" action="{{ url_for('health_data.health_data_input') }}" id="health-data-form" novalidate>
+            <!-- Primary Metabolic Metrics (Row 1) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="glucose" class="form-label" style="margin-bottom: 0;">Plasma Glucose (mg/dL) *</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Normal: 70–99</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="glucose" 
+                        name="glucose" 
+                        class="form-control {% if errors.get('glucose') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 115" 
+                        step="0.1" 
+                        min="40" 
+                        max="500" 
+                        value="{{ form_data.glucose }}" 
+                        required
+                    >
+                    {% if errors.get('glucose') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.glucose }}
+                        </small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="blood_pressure" class="form-label" style="margin-bottom: 0;">Blood Pressure (mm Hg) *</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Normal: &lt; 80</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="blood_pressure" 
+                        name="blood_pressure" 
+                        class="form-control {% if errors.get('blood_pressure') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 76" 
+                        step="0.1" 
+                        min="40" 
+                        max="250" 
+                        value="{{ form_data.blood_pressure }}" 
+                        required
+                    >
+                    {% if errors.get('blood_pressure') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.blood_pressure }}
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Body Mass Index & Age (Row 2) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="bmi" class="form-label" style="margin-bottom: 0;">Body Mass Index (BMI) *</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Normal: 18.5–24.9</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="bmi" 
+                        name="bmi" 
+                        class="form-control {% if errors.get('bmi') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 27.5" 
+                        step="0.1" 
+                        min="10" 
+                        max="70" 
+                        value="{{ form_data.bmi }}" 
+                        required
+                    >
+                    {% if errors.get('bmi') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.bmi }}
+                        </small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="age" class="form-label" style="margin-bottom: 0;">Patient Age (years) *</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Range: 1–120</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        name="age" 
+                        class="form-control {% if errors.get('age') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 42" 
+                        min="1" 
+                        max="120" 
+                        value="{{ form_data.age }}" 
+                        required
+                    >
+                    {% if errors.get('age') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.age }}
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Pedigree & Pregnancies (Row 3) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="diabetes_pedigree_function" class="form-label" style="margin-bottom: 0;">Diabetes Pedigree Function *</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Typical: 0.1–1.5</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="diabetes_pedigree_function" 
+                        name="diabetes_pedigree_function" 
+                        class="form-control {% if errors.get('diabetes_pedigree_function') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 0.45" 
+                        step="0.01" 
+                        min="0.05" 
+                        max="3.00" 
+                        value="{{ form_data.diabetes_pedigree_function }}" 
+                        required
+                    >
+                    {% if errors.get('diabetes_pedigree_function') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.diabetes_pedigree_function }}
+                        </small>
+                    {% endif %}
+                    <small style="color: var(--text-dim); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+                        Scores family history and genetic susceptibility.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="pregnancies" class="form-label" style="margin-bottom: 0;">Number of Pregnancies</label>
+                        <span style="font-size: 0.75rem; color: var(--text-dim);">0 if male / N/A</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="pregnancies" 
+                        name="pregnancies" 
+                        class="form-control {% if errors.get('pregnancies') %}is-invalid{% endif %}" 
+                        placeholder="0" 
+                        min="0" 
+                        max="25" 
+                        value="{{ form_data.pregnancies or '0' }}"
+                    >
+                    {% if errors.get('pregnancies') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.pregnancies }}
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Insulin & Skin Thickness (Row 4) -->
+            <div class="form-row">
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="insulin" class="form-label" style="margin-bottom: 0;">2-Hour Serum Insulin (µU/mL)</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Normal: 16–166</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="insulin" 
+                        name="insulin" 
+                        class="form-control {% if errors.get('insulin') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 85 (or 0 if unmeasured)" 
+                        step="0.1" 
+                        min="0" 
+                        max="900" 
+                        value="{{ form_data.insulin }}"
+                    >
+                    {% if errors.get('insulin') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.insulin }}
+                        </small>
+                    {% endif %}
+                    <small style="color: var(--text-dim); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+                        Enter 0 if serum insulin testing is not available.
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                        <label for="skin_thickness" class="form-label" style="margin-bottom: 0;">Triceps Skinfold (mm)</label>
+                        <span style="font-size: 0.75rem; color: var(--primary-light);">Typical: 10–50</span>
+                    </div>
+                    <input 
+                        type="number" 
+                        id="skin_thickness" 
+                        name="skin_thickness" 
+                        class="form-control {% if errors.get('skin_thickness') %}is-invalid{% endif %}" 
+                        placeholder="e.g. 23 (or 0 if unmeasured)" 
+                        step="0.1" 
+                        min="0" 
+                        max="100" 
+                        value="{{ form_data.skin_thickness }}"
+                    >
+                    {% if errors.get('skin_thickness') %}
+                        <small style="color: var(--accent-rose); font-size: 0.82rem; margin-top: 0.25rem; display: block;">
+                            {{ errors.skin_thickness }}
+                        </small>
+                    {% endif %}
+                    <small style="color: var(--text-dim); font-size: 0.78rem; display: block; margin-top: 0.25rem;">
+                        Enter 0 if caliper skin measurement was omitted.
+                    </small>
+                </div>
+            </div>
+
+            <!-- Action Controls -->
+            <div style="display: flex; gap: 1rem; margin-top: 2rem; border-top: 1px solid var(--border-subtle); padding-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" id="btn-submit-health-data">
+                    <span>Validate & Record Biomarkers</span>
+                    <span>✓</span>
+                </button>
+                <button type="reset" class="btn btn-outline" id="btn-reset-health-form">
+                    Clear Form
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Sidebar: Clinical Guidelines & Handoff Info -->
+    <div>
+        <div class="profile-card" style="margin-bottom: 1.5rem;">
+            <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 0.75rem;">Biomarker Guidelines</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.55; margin-bottom: 1rem;">
+                Measurements are validated against clinical tolerance bounds before persistence to prevent malformed health inputs.
+            </p>
+            <ul style="font-size: 0.82rem; color: var(--text-muted); list-style: none; display: flex; flex-direction: column; gap: 0.6rem;">
+                <li>• <strong>Glucose</strong>: 40–500 mg/dL</li>
+                <li>• <strong>Blood Pressure</strong>: 40–250 mm Hg</li>
+                <li>• <strong>BMI</strong>: 10.0–70.0 kg/m²</li>
+                <li>• <strong>Pedigree Function</strong>: 0.05–3.00</li>
+                <li>• <strong>Age</strong>: 1–120 years</li>
+            </ul>
+        </div>
+
+        <div class="profile-card" style="background: rgba(14, 165, 233, 0.08); border-color: rgba(14, 165, 233, 0.25);">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <span style="font-size: 1.25rem;">🤖</span>
+                <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-light);">ML Pipeline Handoff</h4>
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+                Upon submission, standardized feature vectors are securely stored and made available to the Random Forest Risk Engine (Member 3).
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Submissions History Table -->
+{% if records and records | length > 0 %}
+<div class="profile-card" style="margin-top: 2rem;">
+    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 1rem;">Previously Recorded Health Measurements</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                    <th style="padding: 0.75rem 0.5rem;">Recorded At</th>
+                    <th style="padding: 0.75rem 0.5rem;">Glucose</th>
+                    <th style="padding: 0.75rem 0.5rem;">BP</th>
+                    <th style="padding: 0.75rem 0.5rem;">BMI</th>
+                    <th style="padding: 0.75rem 0.5rem;">Pedigree</th>
+                    <th style="padding: 0.75rem 0.5rem;">Insulin</th>
+                    <th style="padding: 0.75rem 0.5rem;">Skin</th>
+                    <th style="padding: 0.75rem 0.5rem;">Age</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records[:5] %}
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                    <td style="padding: 0.75rem 0.5rem; color: var(--text-dim);">
+                        {{ r.created_at or 'Recent' }}
+                    </td>
+                    <td style="padding: 0.75rem 0.5rem; font-weight: 600; color: var(--primary-light);">{{ r.glucose }} mg/dL</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.blood_pressure }} mm Hg</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.bmi }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.diabetes_pedigree_function }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.insulin }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.skin_thickness }}</td>
+                    <td style="padding: 0.75rem 0.5rem;">{{ r.age }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
