@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Profile — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="profile-header-banner" style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2rem; font-weight: 800;">Patient Profile & Account Management</h1>
+    <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Manage your personal profile details and clinical demographic attributes.
+    </p>
+</div>
+
+<div class="profile-grid">
+    <!-- Left Column: User Summary Card -->
+    <div class="profile-card profile-sidebar" id="profile-summary-card">
+        <div class="profile-avatar" id="profile-avatar">
+            {{ (user.full_name[0] if user.full_name else 'P') | upper }}
+        </div>
+        <h2 class="profile-name" id="profile-display-name">{{ user.full_name }}</h2>
+        <p class="profile-email" id="profile-display-email">{{ user.email }}</p>
+
+        <div style="margin-top: 1rem;">
+            <span class="hero-badge" style="font-size: 0.78rem; margin-bottom: 0;">Verified Account</span>
+        </div>
+
+        <div class="profile-meta-list">
+            <div class="profile-meta-item">
+                <span>Patient ID</span>
+                <span class="profile-meta-value">#PAT-{{ '%05d' % user.id }}</span>
+            </div>
+            <div class="profile-meta-item">
+                <span>Registered On</span>
+                <span class="profile-meta-value">
+                    {{ user.created_at or 'Active' }}
+                </span>
+            </div>
+            <div class="profile-meta-item">
+                <span>Primary Status</span>
+                <span class="profile-meta-value" style="color: var(--accent-emerald);">Active</span>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+            <a href="{{ url_for('auth.logout') }}" class="btn btn-danger btn-block btn-sm" id="btn-logout-sidebar">
+                Log Out
+            </a>
+        </div>
+    </div>
+
+    <!-- Right Column: Editable Profile Information Form -->
+    <div class="profile-card" id="profile-edit-card">
+        <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">Edit Personal Details</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.75rem;">
+            Update your clinical demographic information. Metabolic test records and AI predictions are securely scoped and managed by clinical algorithms.
+        </p>
+
+        <form method="POST" action="{{ url_for('auth.profile') }}" id="profile-form">
+            <div class="form-group">
+                <label for="profile-email-readonly" class="form-label">Email Address (Immutable)</label>
+                <input 
+                    type="email" 
+                    id="profile-email-readonly" 
+                    class="form-control" 
+                    value="{{ user.email }}" 
+                    disabled 
+                    style="opacity: 0.65; cursor: not-allowed;"
+                >
+                <small style="color: var(--text-dim); font-size: 0.8rem; margin-top: 0.25rem; display: block;">
+                    Primary account email cannot be altered directly for security reasons.
+                </small>
+            </div>
+
+            <div class="form-group">
+                <label for="full_name" class="form-label">Full Name *</label>
+                <input 
+                    type="text" 
+                    id="full_name" 
+                    name="full_name" 
+                    class="form-control" 
+                    value="{{ user.full_name }}" 
+                    required 
+                    autocomplete="name"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age" class="form-label">Age (years)</label>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        name="age" 
+                        class="form-control" 
+                        value="{{ user.age or '' }}" 
+                        min="1" 
+                        max="120"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select id="gender" name="gender" class="form-control">
+                        <option value="">Select Gender</option>
+                        <option value="Male" {% if user.gender == 'Male' %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if user.gender == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Other" {% if user.gender == 'Other' %}selected{% endif %}>Other</option>
+                        <option value="Prefer not to say" {% if user.gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    class="form-control" 
+                    value="{{ user.phone or '' }}" 
+                    placeholder="+1 (555) 000-0000"
+                    autocomplete="tel"
+                >
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" id="btn-save-profile">
+                    Save Changes
+                </button>
+                <a href="{{ url_for('auth.profile') }}" class="btn btn-outline" id="btn-reset-profile">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

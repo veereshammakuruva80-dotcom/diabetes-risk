@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="AI-Based Diabetes Risk Prediction and Personalized Clinical Health Recommendation System">
+    <title>{% block title %}GlucoGuard — AI Diabetes Risk System{% endblock %}</title>
+    
+    <!-- Modern Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Shared Design Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+    <!-- Shared Navigation Bar -->
+    <nav class="navbar" id="main-navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand-logo" id="brand-link">
+                <div class="brand-icon">G+</div>
+                <span>GlucoGuard AI</span>
+            </a>
+
+            <ul class="nav-links" id="nav-menu">
+                <li><a href="{{ url_for('index') }}" class="nav-link" id="nav-home">Home</a></li>
+                
+                {% if session.get('user_id') %}
+                    <li>
+                        <a href="{{ url_for('auth.profile') }}" class="nav-user-badge" id="nav-profile-badge">
+                            <span class="badge-dot">●</span>
+                            <span>{{ session.get('user_name', 'My Profile') }}</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('auth.profile') }}" class="nav-link" id="nav-profile">Profile</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" id="nav-logout">Log Out</a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('auth.login') }}" class="nav-link" id="nav-login">Sign In</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm" id="nav-register">Get Started</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Global Flash Alerts Container -->
+    <div class="alerts-container" id="alerts-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category if category != 'error' else 'danger' }}" role="alert">
+                        <span>{{ message }}</span>
+                        <button type="button" class="alert-close" aria-label="Close alert">&times;</button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper" id="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Shared Footer -->
+    <footer class="footer" id="main-footer">
+        <div class="footer-container">
+            <p>&copy; 2026 GlucoGuard AI — Clinical Diabetes Risk Prediction & Informatics System.</p>
+            <p style="margin-top: 0.35rem; font-size: 0.8rem; color: var(--text-dim);">
+                Architected for clinical research, predictive risk analysis, and preventive healthcare.
+            </p>
+        </div>
+    </footer>
+
+    <!-- Shared Client Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

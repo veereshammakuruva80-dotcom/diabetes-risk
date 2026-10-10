@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Registration — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card" id="register-card">
+        <div class="auth-header">
+            <h1>Create Account</h1>
+            <p>Register to monitor metabolic health and receive AI diabetes risk forecasts.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.register') }}" id="register-form" novalidate>
+            <div class="form-group">
+                <label for="full_name" class="form-label">Full Name *</label>
+                <input 
+                    type="text" 
+                    id="full_name" 
+                    name="full_name" 
+                    class="form-control" 
+                    placeholder="e.g. Dr. Jane Doe" 
+                    value="{{ full_name or '' }}" 
+                    required 
+                    autocomplete="name"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="email" class="form-label">Email Address *</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="name@example.com" 
+                    value="{{ email or '' }}" 
+                    required 
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="password" class="form-label">Password * (min 8 chars)</label>
+                    <div class="password-input-group">
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-control" 
+                            placeholder="••••••••" 
+                            required 
+                            minlength="8"
+                            autocomplete="new-password"
+                        >
+                        <button type="button" class="password-toggle-btn" data-target="password" tabindex="-1">Show</button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">Confirm Password *</label>
+                    <div class="password-input-group">
+                        <input 
+                            type="password" 
+                            id="confirm_password" 
+                            name="confirm_password" 
+                            class="form-control" 
+                            placeholder="••••••••" 
+                            required 
+                            minlength="8"
+                            autocomplete="new-password"
+                        >
+                        <button type="button" class="password-toggle-btn" data-target="confirm_password" tabindex="-1">Show</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="age" class="form-label">Age (years)</label>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        name="age" 
+                        class="form-control" 
+                        placeholder="e.g. 35" 
+                        min="1" 
+                        max="120"
+                        value="{{ age or '' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="gender" class="form-label">Gender</label>
+                    <select id="gender" name="gender" class="form-control">
+                        <option value="">Select Gender</option>
+                        <option value="Male" {% if gender == 'Male' %}selected{% endif %}>Male</option>
+                        <option value="Female" {% if gender == 'Female' %}selected{% endif %}>Female</option>
+                        <option value="Other" {% if gender == 'Other' %}selected{% endif %}>Other</option>
+                        <option value="Prefer not to say" {% if gender == 'Prefer not to say' %}selected{% endif %}>Prefer not to say</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    class="form-control" 
+                    placeholder="+1 (555) 019-2834" 
+                    value="{{ phone or '' }}"
+                    autocomplete="tel"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="btn-submit-register" style="margin-top: 1rem;">
+                Create Account
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <span>Already have an account?</span>
+            <a href="{{ url_for('auth.login') }}" id="link-to-login">Sign In here</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
