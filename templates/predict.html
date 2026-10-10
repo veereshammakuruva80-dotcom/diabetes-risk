@@ -1,0 +1,252 @@
+{% extends "base.html" %}
+
+{% block title %}AI Diabetes Risk Prediction — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="profile-header-banner" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 800;">AI Diabetes Risk Stratification</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Machine learning predictive analysis powered by an ensemble Random Forest classifier.
+            </p>
+        </div>
+        <div class="hero-badge" style="margin-bottom: 0;">
+            <span>🤖 Member 3: Random Forest Predictor</span>
+        </div>
+    </div>
+</div>
+
+<div class="profile-grid" style="grid-template-columns: 1fr 420px;">
+    <!-- Left Column: Prediction Parameters Input Form -->
+    <div class="profile-card" id="predict-form-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+            <h2 style="font-size: 1.3rem; font-weight: 700;">Biomarker Feature Inputs</h2>
+            {% if has_health_record %}
+                <span class="hero-badge" style="font-size: 0.75rem; margin-bottom: 0; background: rgba(16, 185, 129, 0.12); color: #34d399; border-color: rgba(16, 185, 129, 0.25);">
+                    ✓ Preloaded from Latest Record
+                </span>
+            {% endif %}
+        </div>
+
+        <form method="POST" action="{{ url_for('prediction.predict_view') }}" id="prediction-form">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="glucose" class="form-label">Plasma Glucose (mg/dL) *</label>
+                    <input 
+                        type="number" 
+                        id="glucose" 
+                        name="glucose" 
+                        class="form-control" 
+                        step="0.1" 
+                        min="40" 
+                        max="500" 
+                        value="{{ inputs.glucose }}" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="bmi" class="form-label">Body Mass Index (BMI) *</label>
+                    <input 
+                        type="number" 
+                        id="bmi" 
+                        name="bmi" 
+                        class="form-control" 
+                        step="0.1" 
+                        min="10" 
+                        max="70" 
+                        value="{{ inputs.bmi }}" 
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="blood_pressure" class="form-label">Blood Pressure (mm Hg) *</label>
+                    <input 
+                        type="number" 
+                        id="blood_pressure" 
+                        name="blood_pressure" 
+                        class="form-control" 
+                        step="0.1" 
+                        min="40" 
+                        max="250" 
+                        value="{{ inputs.blood_pressure }}" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="age" class="form-label">Age (years) *</label>
+                    <input 
+                        type="number" 
+                        id="age" 
+                        name="age" 
+                        class="form-control" 
+                        min="1" 
+                        max="120" 
+                        value="{{ inputs.age }}" 
+                        required
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="diabetes_pedigree_function" class="form-label">Pedigree Function *</label>
+                    <input 
+                        type="number" 
+                        id="diabetes_pedigree_function" 
+                        name="diabetes_pedigree_function" 
+                        class="form-control" 
+                        step="0.01" 
+                        min="0.05" 
+                        max="3.00" 
+                        value="{{ inputs.diabetes_pedigree_function }}" 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="pregnancies" class="form-label">Pregnancies</label>
+                    <input 
+                        type="number" 
+                        id="pregnancies" 
+                        name="pregnancies" 
+                        class="form-control" 
+                        min="0" 
+                        max="25" 
+                        value="{{ inputs.pregnancies or '0' }}"
+                    >
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="insulin" class="form-label">Insulin (µU/mL)</label>
+                    <input 
+                        type="number" 
+                        id="insulin" 
+                        name="insulin" 
+                        class="form-control" 
+                        step="0.1" 
+                        min="0" 
+                        max="900" 
+                        value="{{ inputs.insulin or '0' }}"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="skin_thickness" class="form-label">Skinfold (mm)</label>
+                    <input 
+                        type="number" 
+                        id="skin_thickness" 
+                        name="skin_thickness" 
+                        class="form-control" 
+                        step="0.1" 
+                        min="0" 
+                        max="100" 
+                        value="{{ inputs.skin_thickness or '0' }}"
+                    >
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 1rem; margin-top: 1.5rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+                <button type="submit" class="btn btn-primary" id="btn-run-prediction">
+                    <span>Execute Risk Prediction</span>
+                    <span>→</span>
+                </button>
+                <a href="{{ url_for('health_data.health_data_input') }}" class="btn btn-outline" id="btn-update-biomarkers">
+                    Update Biomarkers
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Column: Prediction Results Card -->
+    <div>
+        {% if result and result.success %}
+            <div class="profile-card" id="prediction-result-card" style="border-color: {% if result.prediction.predicted_class == 1 %}rgba(244, 63, 94, 0.4){% else %}rgba(16, 185, 129, 0.4){% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                        Analysis Result
+                    </span>
+                    <span style="font-size: 0.8rem; color: var(--text-dim);">Random Forest</span>
+                </div>
+
+                <!-- Risk Badge -->
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    {% if result.prediction.predicted_class == 1 %}
+                        <div style="display: inline-block; padding: 0.6rem 1.4rem; background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.35); border-radius: var(--radius-full); color: #fb7185; font-weight: 700; font-size: 1.15rem;">
+                            ⚠️ Higher Estimated Risk
+                        </div>
+                    {% else %}
+                        <div style="display: inline-block; padding: 0.6rem 1.4rem; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: var(--radius-full); color: #34d399; font-weight: 700; font-size: 1.15rem;">
+                            🛡️ Lower Estimated Risk
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Probability Score Gauge -->
+                <div style="margin-bottom: 1.75rem;">
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 0.4rem; font-size: 0.88rem;">
+                        <span style="color: var(--text-muted);">Model-Estimated Risk Probability</span>
+                        <strong style="color: var(--text-main); font-size: 1.05rem;">{{ result.prediction.risk_percentage }}%</strong>
+                    </div>
+                    <div style="width: 100%; height: 10px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-full); overflow: hidden;">
+                        <div style="height: 100%; width: {{ result.prediction.risk_percentage }}%; background: {% if result.prediction.predicted_class == 1 %}linear-gradient(90deg, #f59e0b, #f43f5e){% else %}linear-gradient(90deg, #38bdf8, #10b981){% endif %}; border-radius: var(--radius-full); transition: width 0.5s ease;"></div>
+                    </div>
+                </div>
+
+                <!-- Confidence Breakdown -->
+                <div class="profile-meta-list" style="margin-top: 0; padding-top: 0; border-top: none; font-size: 0.84rem;">
+                    <div class="profile-meta-item">
+                        <span>Class 1 (Elevated Risk)</span>
+                        <span class="profile-meta-value">{{ result.prediction.risk_percentage }}%</span>
+                    </div>
+                    <div class="profile-meta-item">
+                        <span>Class 0 (Baseline Risk)</span>
+                        <span class="profile-meta-value">{{ (result.prediction.confidence_lower_risk * 100) | round(1) }}%</span>
+                    </div>
+                </div>
+
+                <!-- Key Predictive Biomarkers -->
+                <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-subtle); padding-top: 1rem;">
+                    <h4 style="font-size: 0.88rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-muted);">
+                        Primary Model Risk Drivers (Global Feature Importance)
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.8rem; color: var(--text-muted);">
+                        {% for f in result.prediction.top_contributing_factors %}
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>{{ f.feature | capitalize }}</span>
+                                <span style="color: var(--primary-light);">{{ f.importance_pct }}%</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Clinical Disclaimer -->
+                <div style="margin-top: 1.5rem; padding: 0.85rem; background: rgba(0, 0, 0, 0.25); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.76rem; color: var(--text-dim); line-height: 1.5;">
+                    ⚖️ <strong>Clinical Disclaimer:</strong> {{ result.disclaimer }}
+                </div>
+            </div>
+        {% else %}
+            <!-- Initial State Card before prediction -->
+            <div class="profile-card" id="prediction-placeholder-card">
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <div style="font-size: 2.5rem; margin-bottom: 1rem;">🧠</div>
+                    <h3 style="font-size: 1.2rem; font-weight: 700; margin-bottom: 0.5rem;">Awaiting Feature Inputs</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1.5rem;">
+                        Submit physiological measurements to execute algorithmic classification via the trained Random Forest ensemble.
+                    </p>
+                    <div style="padding: 0.85rem; background: rgba(14, 165, 233, 0.08); border-radius: var(--radius-sm); font-size: 0.8rem; color: var(--primary-light); text-align: left;">
+                        ℹ️ Model evaluates 8 metabolic dimensions including glycemic response, adiposity (BMI), and pedigree genetics.
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
