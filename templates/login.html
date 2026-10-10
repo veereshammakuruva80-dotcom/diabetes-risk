@@ -12,35 +12,20 @@
 
         <form method="POST" action="{{ url_for('auth.login') }}" id="login-form">
             {% if next %}
-                <input type="hidden" name="next" value="{{ next }}">
+            <input type="hidden" name="next" value="{{ next }}">
             {% endif %}
 
             <div class="form-group">
                 <label for="email" class="form-label">Email Address *</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    name="email" 
-                    class="form-control" 
-                    placeholder="name@example.com" 
-                    value="{{ email or '' }}" 
-                    required 
-                    autocomplete="email"
-                >
+                <input type="email" id="email" name="email" class="form-control" placeholder="name@example.com"
+                    value="{{ email or '' }}" required autocomplete="email">
             </div>
 
             <div class="form-group">
                 <label for="password" class="form-label">Password *</label>
                 <div class="password-input-group">
-                    <input 
-                        type="password" 
-                        id="password" 
-                        name="password" 
-                        class="form-control" 
-                        placeholder="••••••••" 
-                        required 
-                        autocomplete="current-password"
-                    >
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••"
+                        required autocomplete="current-password">
                     <button type="button" class="password-toggle-btn" data-target="password" tabindex="-1">Show</button>
                 </div>
             </div>
