@@ -29,10 +29,7 @@
                 
                 {% if session.get('user_id') %}
                     <li>
-                        <a href="{{ url_for('auth.profile') }}" class="nav-user-badge" id="nav-profile-badge">
-                            <span class="badge-dot">●</span>
-                            <span>{{ session.get('user_name', 'My Profile') }}</span>
-                        </a>
+                        <a href="{{ url_for('dashboard.dashboard_view') }}" class="nav-link" id="nav-dashboard">Dashboard</a>
                     </li>
                     <li>
                         <a href="{{ url_for('health_data.health_data_input') }}" class="nav-link" id="nav-health-data">Health Data</a>
@@ -41,7 +38,13 @@
                         <a href="{{ url_for('prediction.predict_view') }}" class="nav-link" id="nav-predict">Risk Prediction</a>
                     </li>
                     <li>
-                        <a href="{{ url_for('auth.profile') }}" class="nav-link" id="nav-profile">Profile</a>
+                        <a href="{{ url_for('dashboard.history_view') }}" class="nav-link" id="nav-history">History</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('auth.profile') }}" class="nav-user-badge" id="nav-profile-badge">
+                            <span class="badge-dot">●</span>
+                            <span>{{ session.get('user_name', 'My Profile') }}</span>
+                        </a>
                     </li>
                     <li>
                         <a href="{{ url_for('auth.logout') }}" class="btn btn-outline btn-sm" id="nav-logout">Log Out</a>

@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, request, jsonify, flash, session, 
 from utils.decorators import login_required
 from services.health_data_service import get_user_latest_health_record
 from services.prediction_service import predict_diabetes_risk, load_model_artifact
+from services.dashboard_service import save_prediction_record
 
 prediction_bp = Blueprint("prediction", __name__)
 
@@ -52,6 +53,13 @@ def predict_view():
 
         if prediction_result["success"]:
             result = prediction_result
+            # Persist prediction result for Member 4 Dashboard and History
+            save_prediction_record(
+                user_id=user_id,
+                prediction_result=prediction_result,
+                health_data_id=latest_record.get("id") if latest_record else None,
+                measurements=prediction_result["prediction"]["input_biomarkers"]
+            )
             flash("AI Diabetes Risk Assessment generated successfully.", "success")
         else:
             flash(prediction_result.get("error", "Unable to generate prediction."), "danger")

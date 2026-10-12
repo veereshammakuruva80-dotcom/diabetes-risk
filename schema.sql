@@ -34,3 +34,21 @@ CREATE TABLE IF NOT EXISTS health_data (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_health_user (user_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Member 4: Prediction History & Risk Tracking Table
+CREATE TABLE IF NOT EXISTS predictions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    health_data_id INT NULL,
+    predicted_class INT NOT NULL,
+    risk_label VARCHAR(50) NOT NULL,
+    risk_probability FLOAT NOT NULL,
+    risk_percentage FLOAT NOT NULL,
+    glucose FLOAT NULL,
+    bmi FLOAT NULL,
+    blood_pressure FLOAT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_pred_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+

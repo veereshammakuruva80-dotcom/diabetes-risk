@@ -94,6 +94,23 @@ def init_db():
                     INDEX idx_health_user (user_id)
                 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
             """)
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS predictions (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    health_data_id INT NULL,
+                    predicted_class INT NOT NULL,
+                    risk_label VARCHAR(50) NOT NULL,
+                    risk_probability FLOAT NOT NULL,
+                    risk_percentage FLOAT NOT NULL,
+                    glucose FLOAT NULL,
+                    bmi FLOAT NULL,
+                    blood_pressure FLOAT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+                    INDEX idx_pred_user (user_id)
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+            """)
             conn.commit()
         else:
             cursor.execute("""
@@ -127,6 +144,23 @@ def init_db():
                 );
             """)
             cursor.execute("CREATE INDEX IF NOT EXISTS idx_health_user ON health_data(user_id);")
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS predictions (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER NOT NULL,
+                    health_data_id INTEGER NULL,
+                    predicted_class INTEGER NOT NULL,
+                    risk_label TEXT NOT NULL,
+                    risk_probability REAL NOT NULL,
+                    risk_percentage REAL NOT NULL,
+                    glucose REAL NULL,
+                    bmi REAL NULL,
+                    blood_pressure REAL NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                );
+            """)
+            cursor.execute("CREATE INDEX IF NOT EXISTS idx_pred_user ON predictions(user_id);")
             conn.commit()
         cursor.close()
     finally:

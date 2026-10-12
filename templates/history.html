@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Prediction History & Audit Log — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="profile-header-banner" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 2rem; font-weight: 800;">Diabetes Risk Prediction History</h1>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Audited timeline of algorithmic classifications, estimated probability scores, and captured metabolic biomarkers.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn btn-outline btn-sm" id="btn-back-dashboard">
+                ← Back to Dashboard
+            </a>
+            <a href="{{ url_for('prediction.predict_view') }}" class="btn btn-primary btn-sm" id="btn-history-new-prediction">
+                + Run New Assessment
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if not records or records | length == 0 %}
+<!-- ====================================================================
+     EMPTY STATE: Displayed when the patient has no historical evaluations
+     ==================================================================== -->
+<div class="profile-card" id="history-empty-state" style="text-align: center; padding: 4rem 2rem;">
+    <div style="font-size: 2.75rem; margin-bottom: 1rem;">📋</div>
+    <h2 style="font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem;">No Historical Records Found</h2>
+    <p style="color: var(--text-muted); font-size: 0.95rem; max-width: 480px; margin: 0 auto 1.75rem; line-height: 1.6;">
+        No diabetes risk predictions have been generated for your account. Perform an assessment to establish your historical health log.
+    </p>
+    <a href="{{ url_for('prediction.predict_view') }}" class="btn btn-primary" id="btn-start-first-assessment">
+        <span>Execute First Risk Assessment</span>
+        <span>→</span>
+    </a>
+</div>
+{% else %}
+
+<!-- ====================================================================
+     HISTORICAL PREDICTION AUDIT LOG TABLE
+     ==================================================================== -->
+<div class="profile-card" id="history-table-container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem;">
+        <div>
+            <h2 style="font-size: 1.25rem; font-weight: 700;">Recorded Assessments</h2>
+            <span style="font-size: 0.82rem; color: var(--text-dim);">
+                Total Evaluations: {{ records | length }} | Sorted Newest to Oldest
+            </span>
+        </div>
+        <span class="hero-badge" style="font-size: 0.76rem; margin-bottom: 0;">User Isolated (HIPAA-Compliant Scope)</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; text-align: left;">
+            <thead>
+                <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                    <th style="padding: 0.85rem 0.5rem;">Date & Time</th>
+                    <th style="padding: 0.85rem 0.5rem;">Risk Category</th>
+                    <th style="padding: 0.85rem 0.5rem;">Model Probability</th>
+                    <th style="padding: 0.85rem 0.5rem;">Plasma Glucose</th>
+                    <th style="padding: 0.85rem 0.5rem;">BMI</th>
+                    <th style="padding: 0.85rem 0.5rem;">Blood Pressure</th>
+                    <th style="padding: 0.85rem 0.5rem;">Clinical Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in records %}
+                <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                    <td style="padding: 1rem 0.5rem; color: var(--text-dim); font-size: 0.85rem;">
+                        {{ r.created_at or 'Recent Evaluation' }}
+                    </td>
+                    <td style="padding: 1rem 0.5rem;">
+                        {% if r.predicted_class == 1 %}
+                            <span style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; background: rgba(244, 63, 94, 0.12); border: 1px solid rgba(244, 63, 94, 0.3); border-radius: var(--radius-full); color: #fb7185; font-weight: 700; font-size: 0.82rem;">
+                                ⚠️ Higher Risk
+                            </span>
+                        {% else %}
+                            <span style="display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.75rem; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-full); color: #34d399; font-weight: 700; font-size: 0.82rem;">
+                                🛡️ Lower Risk
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem 0.5rem;">
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <strong style="font-size: 0.95rem; color: var(--text-main);">{{ r.risk_percentage }}%</strong>
+                            <div style="width: 60px; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-full); overflow: hidden;">
+                                <div style="height: 100%; width: {{ r.risk_percentage }}%; background: {% if r.predicted_class == 1 %}linear-gradient(90deg, #f59e0b, #f43f5e){% else %}linear-gradient(90deg, #38bdf8, #10b981){% endif %};"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="padding: 1rem 0.5rem; font-weight: 600; color: var(--primary-light);">
+                        {{ r.glucose if r.glucose else '—' }} <span style="font-size: 0.75rem; color: var(--text-dim);">mg/dL</span>
+                    </td>
+                    <td style="padding: 1rem 0.5rem;">
+                        {{ r.bmi if r.bmi else '—' }} <span style="font-size: 0.75rem; color: var(--text-dim);">kg/m²</span>
+                    </td>
+                    <td style="padding: 1rem 0.5rem;">
+                        {{ r.blood_pressure if r.blood_pressure else '—' }} <span style="font-size: 0.75rem; color: var(--text-dim);">mm Hg</span>
+                    </td>
+                    <td style="padding: 1rem 0.5rem;">
+                        <a href="{{ url_for('dashboard.dashboard_view') }}" class="btn btn-outline btn-sm" style="font-size: 0.75rem; padding: 0.25rem 0.6rem;">
+                            View Details
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Historical Disclaimer Notice -->
+    <div style="margin-top: 1.5rem; padding: 0.85rem; background: rgba(0, 0, 0, 0.2); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.76rem; color: var(--text-dim); line-height: 1.5;">
+        ⚖️ <strong>Audit Note:</strong> Recorded probabilities reflect the output of the trained Random Forest classifier at the time of feature submission. Changes in lifestyle or therapeutic intervention over time are reflected in successive assessments.
+    </div>
+</div>
+{% endif %}
+{% endblock %}

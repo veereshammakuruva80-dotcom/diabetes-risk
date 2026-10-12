@@ -1,0 +1,322 @@
+{% extends "base.html" %}
+
+{% block title %}Patient Health Dashboard — GlucoGuard AI{% endblock %}
+
+{% block content %}
+<div class="profile-header-banner" style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.25rem;">
+                <h1 style="font-size: 2.1rem; font-weight: 800;" id="dashboard-welcome-heading">
+                    Welcome back, {{ summary.user.full_name }}
+                </h1>
+            </div>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">
+                Continuous diabetes risk surveillance, metabolic biomarkers, and evidence-based clinical wellness guidance.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <a href="{{ url_for('health_data.health_data_input') }}" class="btn btn-outline btn-sm" id="btn-dashboard-update-biomarkers">
+                + Update Biomarkers
+            </a>
+            <a href="{{ url_for('prediction.predict_view') }}" class="btn btn-primary btn-sm" id="btn-dashboard-new-prediction">
+                Run AI Prediction →
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if not summary.has_records %}
+<!-- ====================================================================
+     EMPTY STATE: Displayed when the patient has not made any predictions yet
+     ==================================================================== -->
+<div class="profile-card" id="dashboard-empty-state" style="text-align: center; padding: 3.5rem 2rem; margin-bottom: 2rem;">
+    <div style="width: 72px; height: 72px; margin: 0 auto 1.5rem; background: rgba(14, 165, 233, 0.12); border-radius: var(--radius-full); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+        🩺
+    </div>
+    <h2 style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.75rem;">No Diabetes Risk Assessments Recorded Yet</h2>
+    <p style="color: var(--text-muted); max-width: 580px; margin: 0 auto 2rem; font-size: 0.95rem; line-height: 1.6;">
+        You haven't recorded metabolic biomarkers or generated an algorithmic diabetes risk stratification. 
+        Start by entering your verified physiological measurements to receive instant model predictions and personalized health guidance.
+    </p>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="{{ url_for('health_data.health_data_input') }}" class="btn btn-primary" id="btn-empty-start-health-data">
+            <span>Record Initial Biomarkers</span>
+            <span>→</span>
+        </a>
+        <a href="{{ url_for('prediction.predict_view') }}" class="btn btn-outline" id="btn-empty-start-predict">
+            Direct Risk Calculation
+        </a>
+    </div>
+</div>
+{% else %}
+
+<!-- ====================================================================
+     ACTIVE DASHBOARD: Summary Stat Cards
+     ==================================================================== -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+    <!-- Card 1: Latest Risk Category -->
+    <div class="profile-card" id="stat-card-risk" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                Latest Risk Category
+            </span>
+            <span style="font-size: 1.25rem;">
+                {% if summary.latest_prediction and summary.latest_prediction.predicted_class == 1 %}⚠️{% else %}🛡️{% endif %}
+            </span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+            {% if summary.latest_prediction %}
+                {% if summary.latest_prediction.predicted_class == 1 %}
+                    <span style="color: #fb7185; font-size: 1.35rem; font-weight: 800; display: block;" id="stat-risk-label">
+                        Higher Estimated Risk
+                    </span>
+                {% else %}
+                    <span style="color: #34d399; font-size: 1.35rem; font-weight: 800; display: block;" id="stat-risk-label">
+                        Lower Estimated Risk
+                    </span>
+                {% endif %}
+            {% else %}
+                <span style="color: var(--text-muted); font-size: 1.2rem; font-weight: 700;">Awaiting Prediction</span>
+            {% endif %}
+        </div>
+        <span style="font-size: 0.78rem; color: var(--text-dim);" id="stat-prediction-date">
+            Evaluated: {{ summary.latest_prediction.created_at or 'Recently' }}
+        </span>
+    </div>
+
+    <!-- Card 2: Model-Estimated Probability -->
+    <div class="profile-card" id="stat-card-probability" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                Model Risk Probability
+            </span>
+            <span style="font-size: 1.25rem;">📊</span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+            <span style="font-size: 1.85rem; font-weight: 800; color: var(--text-main);" id="stat-risk-percentage">
+                {{ summary.latest_prediction.risk_percentage if summary.latest_prediction else 0.0 }}%
+            </span>
+        </div>
+        <!-- Progress Bar -->
+        <div style="width: 100%; height: 6px; background: rgba(255, 255, 255, 0.08); border-radius: var(--radius-full); overflow: hidden;">
+            <div style="height: 100%; width: {{ summary.latest_prediction.risk_percentage if summary.latest_prediction else 0 }}%; background: {% if summary.latest_prediction and summary.latest_prediction.predicted_class == 1 %}linear-gradient(90deg, #f59e0b, #f43f5e){% else %}linear-gradient(90deg, #38bdf8, #10b981){% endif %};"></div>
+        </div>
+    </div>
+
+    <!-- Card 3: Plasma Glucose -->
+    <div class="profile-card" id="stat-card-glucose" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                Plasma Glucose
+            </span>
+            <span style="font-size: 1.25rem;">🩸</span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+            <span style="font-size: 1.85rem; font-weight: 800; color: var(--primary-light);" id="stat-glucose-val">
+                {% if summary.latest_health_data and summary.latest_health_data.glucose %}
+                    {{ summary.latest_health_data.glucose }} <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted);">mg/dL</span>
+                {% elif summary.latest_prediction and summary.latest_prediction.glucose %}
+                    {{ summary.latest_prediction.glucose }} <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted);">mg/dL</span>
+                {% else %}
+                    —
+                {% endif %}
+            </span>
+        </div>
+        <span style="font-size: 0.78rem; color: var(--text-dim);">
+            Reference Fasting: 70–99 mg/dL
+        </span>
+    </div>
+
+    <!-- Card 4: Body Mass Index (BMI) -->
+    <div class="profile-card" id="stat-card-bmi" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span style="font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                Body Mass Index (BMI)
+            </span>
+            <span style="font-size: 1.25rem;">⚖️</span>
+        </div>
+        <div style="margin-bottom: 0.5rem;">
+            <span style="font-size: 1.85rem; font-weight: 800; color: var(--text-main);" id="stat-bmi-val">
+                {% if summary.latest_health_data and summary.latest_health_data.bmi %}
+                    {{ summary.latest_health_data.bmi }} <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted);">kg/m²</span>
+                {% elif summary.latest_prediction and summary.latest_prediction.bmi %}
+                    {{ summary.latest_prediction.bmi }} <span style="font-size: 0.95rem; font-weight: 500; color: var(--text-muted);">kg/m²</span>
+                {% else %}
+                    —
+                {% endif %}
+            </span>
+        </div>
+        <span style="font-size: 0.78rem; color: var(--text-dim);">
+            Healthy Range: 18.5–24.9
+        </span>
+    </div>
+</div>
+
+<!-- ====================================================================
+     DASHBOARD BODY: Trend Chart & Health Recommendations Grid
+     ==================================================================== -->
+<div class="profile-grid" style="grid-template-columns: 1fr 380px; margin-bottom: 2rem;">
+    <!-- Left Column: Risk Trend Visualization -->
+    <div class="profile-card" id="risk-trend-container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <div>
+                <h2 style="font-size: 1.25rem; font-weight: 700;">Historical Risk Trajectory</h2>
+                <p style="color: var(--text-muted); font-size: 0.85rem;">
+                    Model-estimated probability tracking across successive evaluations.
+                </p>
+            </div>
+            <a href="{{ url_for('dashboard.history_view') }}" class="btn btn-outline btn-sm" id="btn-view-all-history">
+                View Full Log →
+            </a>
+        </div>
+
+        {% if summary.trend_data and summary.trend_data | length > 1 %}
+            <!-- SVG Risk Trend Line Chart -->
+            <div style="padding: 1rem 0 0.5rem; width: 100%; overflow-x: auto;" id="trend-chart-wrapper">
+                <svg viewBox="0 0 540 180" style="width: 100%; height: auto; display: block; overflow: visible;">
+                    <defs>
+                        <linearGradient id="trendGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#0284c7" stop-opacity="0.35" />
+                            <stop offset="100%" stop-color="#0284c7" stop-opacity="0.0" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Horizontal Grid Guidelines -->
+                    <line x1="40" y1="20" x2="520" y2="20" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
+                    <text x="30" y="24" fill="var(--text-dim)" font-size="10" text-anchor="end">100%</text>
+
+                    <line x1="40" y1="75" x2="520" y2="75" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
+                    <text x="30" y="79" fill="var(--text-dim)" font-size="10" text-anchor="end">50%</text>
+
+                    <line x1="40" y1="130" x2="520" y2="130" stroke="rgba(255,255,255,0.06)" stroke-dasharray="4" />
+                    <text x="30" y="134" fill="var(--text-dim)" font-size="10" text-anchor="end">0%</text>
+
+                    <!-- Plot dynamic coordinates -->
+                    {% set n = summary.trend_data | length %}
+                    {% set step = (460 / (n - 1)) if n > 1 else 460 %}
+                    
+                    <!-- Calculate Polyline points -->
+                    {% set points = [] %}
+                    {% for item in summary.trend_data %}
+                        {% set x = 50 + (loop.index0 * step) %}
+                        {% set y = 130 - (item.risk_percentage * 1.1) %}
+                        {% set _ = points.append(x ~ ',' ~ y) %}
+                    {% endfor %}
+
+                    <polyline
+                        fill="none"
+                        stroke="#38bdf8"
+                        stroke-width="3"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        points="{{ points | join(' ') }}"
+                    />
+
+                    {% for item in summary.trend_data %}
+                        {% set x = 50 + (loop.index0 * step) %}
+                        {% set y = 130 - (item.risk_percentage * 1.1) %}
+                        <circle cx="{{ x }}" cy="{{ y }}" r="5" fill="#0b1120" stroke="#38bdf8" stroke-width="2.5" />
+                        <text x="{{ x }}" y="{{ y - 10 }}" fill="#f8fafc" font-size="11" font-weight="600" text-anchor="middle">
+                            {{ item.risk_percentage }}%
+                        </text>
+                        <text x="{{ x }}" y="152" fill="var(--text-dim)" font-size="10" text-anchor="middle">
+                            {{ item.date }}
+                        </text>
+                    {% endfor %}
+                </svg>
+            </div>
+        {% else %}
+            <!-- Single Evaluation Note -->
+            <div style="padding: 2.5rem 1rem; text-align: center; background: rgba(255,255,255,0.02); border-radius: var(--radius-sm); border: 1px dashed var(--border-subtle);">
+                <div style="font-size: 1.75rem; margin-bottom: 0.5rem;">📈</div>
+                <h4 style="font-size: 1rem; font-weight: 600; margin-bottom: 0.25rem;">Insufficient Data for Trend Curve</h4>
+                <p style="font-size: 0.82rem; color: var(--text-muted); max-width: 420px; margin: 0 auto;">
+                    A trend line activates once at least two risk assessments are recorded over time. 
+                    Continue logging periodic updates to monitor risk evolution.
+                </p>
+            </div>
+        {% endif %}
+
+        <!-- Quick Summary Table of Recent Predictions -->
+        <div style="margin-top: 1.75rem; border-top: 1px solid var(--border-subtle); padding-top: 1.25rem;">
+            <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-muted); margin-bottom: 0.75rem;">
+                Recent Evaluations
+            </h4>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                    <thead>
+                        <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-dim);">
+                            <th style="padding: 0.5rem 0.25rem;">Date</th>
+                            <th style="padding: 0.5rem 0.25rem;">Category</th>
+                            <th style="padding: 0.5rem 0.25rem;">Risk %</th>
+                            <th style="padding: 0.5rem 0.25rem;">Glucose</th>
+                            <th style="padding: 0.5rem 0.25rem;">BMI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in summary.recent_history %}
+                        <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                            <td style="padding: 0.65rem 0.25rem; color: var(--text-dim);">
+                                {{ (r.created_at | string)[:16] if r.created_at else 'Recent' }}
+                            </td>
+                            <td style="padding: 0.65rem 0.25rem;">
+                                {% if r.predicted_class == 1 %}
+                                    <span style="color: #fb7185; font-weight: 600;">Higher Risk</span>
+                                {% else %}
+                                    <span style="color: #34d399; font-weight: 600;">Lower Risk</span>
+                                {% endif %}
+                            </td>
+                            <td style="padding: 0.65rem 0.25rem; font-weight: 700;">{{ r.risk_percentage }}%</td>
+                            <td style="padding: 0.65rem 0.25rem;">{{ r.glucose or '—' }}</td>
+                            <td style="padding: 0.65rem 0.25rem;">{{ r.bmi or '—' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: General Health Recommendations -->
+    <div class="profile-card" id="recommendations-container">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+            <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700;">Clinical Wellness Guidance</h3>
+                <span style="font-size: 0.75rem; color: var(--text-dim);">Evidence-Based Lifestyle Recommendations</span>
+            </div>
+            <span style="font-size: 1.35rem;">💡</span>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            {% for rec in summary.recommendations %}
+            <div style="padding: 0.85rem; border-radius: var(--radius-sm); background: rgba(15, 23, 42, 0.6); border: 1px solid {% if rec.priority == 'high' %}rgba(244, 63, 94, 0.25){% elif rec.priority == 'medium' %}rgba(245, 158, 11, 0.25){% else %}rgba(56, 189, 248, 0.2){% endif %};">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.35rem;">
+                    <span>{{ rec.icon }}</span>
+                    <h4 style="font-size: 0.88rem; font-weight: 700; color: var(--text-main);">
+                        {{ rec.title }}
+                    </h4>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 0.6rem;">
+                    {{ rec.description }}
+                </p>
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: {% if rec.priority == 'high' %}#fb7185{% elif rec.priority == 'medium' %}#f59e0b{% else %}var(--primary-light){% endif %};">
+                        ● {{ rec.category }}
+                    </span>
+                    <span style="font-size: 0.75rem; font-weight: 600; color: var(--text-main);">
+                        {{ rec.action }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Strict Non-Diagnostic Clinical Disclaimer -->
+        <div style="margin-top: 1.25rem; padding: 0.75rem; background: rgba(0, 0, 0, 0.3); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.74rem; color: var(--text-dim); line-height: 1.5;">
+            ⚖️ <strong>General Guidance Notice:</strong> {{ summary.clinical_disclaimer }}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

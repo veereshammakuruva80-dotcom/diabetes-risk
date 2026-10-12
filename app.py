@@ -5,6 +5,7 @@ from db import init_db
 from routes.auth_routes import auth_bp
 from routes.health_data_routes import health_data_bp
 from routes.prediction_routes import prediction_bp
+from routes.dashboard_routes import dashboard_bp
 
 def create_app(test_config=None):
     """Application factory for Flask app."""
@@ -32,6 +33,7 @@ def create_app(test_config=None):
     app.register_blueprint(auth_bp)
     app.register_blueprint(health_data_bp)
     app.register_blueprint(prediction_bp)
+    app.register_blueprint(dashboard_bp)
 
     # Landing / Home Route
     @app.route("/")
