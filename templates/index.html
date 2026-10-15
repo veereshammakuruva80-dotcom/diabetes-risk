@@ -9,26 +9,27 @@
     </div>
     <h1 class="hero-title">Predictive AI for Early Diabetes Risk Detection</h1>
     <p class="hero-subtitle">
-        Empowering patients and clinicians with machine learning insights, metabolic risk stratification, and evidence-based personalized lifestyle interventions.
+        Empowering patients and clinicians with machine learning insights, metabolic risk stratification, and
+        evidence-based personalized lifestyle interventions.
     </p>
 
     <div class="hero-actions">
         {% if session.get('user_id') %}
-            <a href="{{ url_for('auth.profile') }}" class="btn btn-primary" id="hero-cta-profile">
-                <span>View Patient Profile</span>
-                <span>→</span>
-            </a>
-            <a href="{{ url_for('auth.logout') }}" class="btn btn-outline" id="hero-cta-logout">
-                <span>Sign Out</span>
-            </a>
+        <a href="{{ url_for('auth.profile') }}" class="btn btn-primary" id="hero-cta-profile">
+            <span>View Patient Profile</span>
+            <span>→</span>
+        </a>
+        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline" id="hero-cta-logout">
+            <span>Sign Out</span>
+        </a>
         {% else %}
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary" id="hero-cta-register">
-                <span>Create Patient Account</span>
-                <span>→</span>
-            </a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline" id="hero-cta-login">
-                <span>Sign In</span>
-            </a>
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary" id="hero-cta-register">
+            <span>Create Patient Account</span>
+            <span>→</span>
+        </a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline" id="hero-cta-login">
+            <span>Sign In</span>
+        </a>
         {% endif %}
     </div>
 
@@ -37,7 +38,8 @@
             <div class="feature-icon">🔒</div>
             <h2 class="feature-title">Secure Authentication</h2>
             <p class="feature-desc">
-                Protected user registration, PBKDF2 password hashing, secure session management, and role-scoped profile administration.
+                Protected user registration, PBKDF2 password hashing, secure session management, and role-scoped profile
+                administration.
             </p>
         </div>
 
@@ -45,7 +47,8 @@
             <div class="feature-icon">📊</div>
             <h2 class="feature-title">Random Forest Risk Engine</h2>
             <p class="feature-desc">
-                Clinical classification leveraging metabolic indicators like glucose, BMI, insulin, age, and blood pressure (Member 2 Module).
+                Clinical classification leveraging metabolic indicators like glucose, BMI, insulin, age, and blood
+                pressure.
             </p>
         </div>
 
@@ -53,7 +56,8 @@
             <div class="feature-icon">🩺</div>
             <h2 class="feature-title">Personalized Guidance</h2>
             <p class="feature-desc">
-                Tailored clinical recommendations, dietary insights, and glycemic monitoring protocols based on risk stratification (Member 3 Module).
+                Tailored clinical recommendations, dietary insights, and glycemic monitoring protocols based on risk
+                stratification.
             </p>
         </div>
     </div>

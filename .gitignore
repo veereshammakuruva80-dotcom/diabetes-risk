@@ -26,3 +26,8 @@ venv.bak/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
